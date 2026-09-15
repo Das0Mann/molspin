@@ -53,7 +53,7 @@ namespace RunSection::General::SS
     }
 
     bool SSSystemPreparation::Prepare(const SpinAPI::system_ptr &system,const SSExecutionPlan &plan,
-        const SSOrientation &orientation,SSPreparedCalculation &prepared,std::string &error)
+        const SSOrientation &orientation,SSPreparedCalculation &prepared,std::string &error) //SSSchultenWolynes &SW)
     {
         prepared=SSPreparedCalculation();error.clear();
         if(!system){error="SSGeneral cannot prepare a null SpinSystem";return false;}

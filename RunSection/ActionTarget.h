@@ -40,6 +40,7 @@ namespace RunSection
 	public:
 		// Constructors / Destructors
 		ActionTarget(std::function<T()> _dataSource) :data(nullptr), dataSource(_dataSource), readonly(true), initialValue(T()), check(nullptr){};
+		ActionTarget(T &_data, bool _readonly = false) :data(&_data), dataSource(nullptr), readonly(_readonly), initialValue(_data), check(nullptr){};
 		ActionTarget(T &_data, CheckFunction<T> _check, bool _readonly = false) : data(&_data), dataSource(nullptr),readonly(_readonly), initialValue(_data), check(_check){}; // Normal constructor
 		ActionTarget(const ActionTarget<T> &_at) : data(_at.data),dataSource(_at.dataSource), readonly(_at.readonly), initialValue(_at.initialValue), check(_at.check){};			  // Copy-constructor
 		~ActionTarget(){};																																  // Destructor

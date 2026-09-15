@@ -69,6 +69,7 @@ namespace RunSection::General::SS
         std::vector<std::string> labels;std::vector<double> times;std::vector<arma::rowvec> averagedTrajectory;arma::rowvec averagedStatic;bool first=true;
         for(size_t oi=0;oi<orientations.size();++oi)
         {
+            //schulten wolynes loop goes here
             ::RunSection::General::Log::PrintOrientationProgress(this->Log(),oi,orientations.size());SSPreparedCalculation prepared;if(!SSSystemPreparation::Prepare(system,plan,orientations[oi],prepared,error)){this->Log()<<"ERROR: orientation "<<oi<<": "<<error<<"."<<std::endl;return false;}
             SSObservableCollector collector;if(!collector.Prepare(plan,prepared,orientations[oi],error)){this->Log()<<"ERROR: "<<error<<"."<<std::endl;return false;}if(first)labels=collector.Labels();else if(labels!=collector.Labels()){this->Log()<<"ERROR: observable layout changed between orientations."<<std::endl;return false;}
             if(plan.calculation==SSCalculation::TimeEvolution)
@@ -81,7 +82,9 @@ namespace RunSection::General::SS
             else
             {
                 arma::cx_vec state;const bool ok=plan.calculation==SSCalculation::TimeIntegrated?SSPropagator::SolveTimeIntegrated(plan,prepared,state,error):SSPropagator::SolveSteadyState(plan,prepared,state,error);if(!ok){this->Log()<<"ERROR: "<<error<<"."<<std::endl;return false;}arma::rowvec values;if(!collector.Evaluate(prepared,state,values,error)){this->Log()<<"ERROR: "<<error<<"."<<std::endl;return false;}if(first)averagedStatic.zeros(values.n_elem);averagedStatic+=orientations[oi].weight*values;
-            }first=false;
+            }
+            first=false;
+            //SW loop ends here
         }
         if(this->RunSettings()->CurrentStep()==1)WriteHeader(labels,plan.calculation==SSCalculation::TimeEvolution);
         if(plan.calculation==SSCalculation::TimeEvolution)for(size_t i=0;i<times.size();++i){this->Data()<<this->RunSettings()->CurrentStep()<<" "<<std::setprecision(15)<<times[i]<<" ";this->WriteStandardOutput(this->Data());for(double v:averagedTrajectory[i])this->Data()<<v<<" ";this->Data()<<std::endl;}

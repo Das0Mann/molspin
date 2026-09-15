@@ -61,6 +61,7 @@ namespace RunSection::General::SS
         // Derive output times from integer indices.  Repeatedly adding dt can
         // leave t a few ulps below an exactly divisible total time and used to
         // produce a duplicate, almost-zero final propagation step.
+        // Will need to update this when we introduce time adaptive propagation.
         const double ratio=plan.totalTime/plan.timeStep;
         if(!std::isfinite(ratio) || ratio>static_cast<double>(std::numeric_limits<size_t>::max()))
         {error="SSGeneral propagation requires too many time steps";return false;}

@@ -29,10 +29,40 @@ namespace SpinAPI
 		}
 	}
 
-	// -----------------------------------------------------
-	// Spin Constructors and Destructor
-	// -----------------------------------------------------
-	Operator::Operator(std::string _name, std::string _contents) : properties(std::make_shared<MSDParser::ObjectParser>(_name, _contents)), type(OperatorType::Unspecified), spins(), rate1(0.0), rate2(0.0), rate3(0.0), relaxationFrame(RelaxationFrame::Molecular), isValid(false)
+    std::vector<RunSection::NamedActionScalar> Operator::CreateActionScalars(const std::string &_system)
+    {
+		std::vector<RunSection::NamedActionScalar> scalars;
+        if (!this->IsValid())
+		{
+			return scalars;
+		}
+
+		auto CheckFinite = [](const double &_d)
+		{
+			return std::isfinite(_d);
+		};
+
+		RunSection::ActionScalar rate1 = RunSection::ActionScalar(this->rate1);
+		RunSection::ActionScalar rate2 = RunSection::ActionScalar(this->rate2);
+		RunSection::ActionScalar rate3 = RunSection::ActionScalar(this->rate3);
+
+		RunSection::NamedActionScalar rate_named = RunSection::NamedActionScalar(_system + "." + this->Name() + ".rate", rate1);
+		RunSection::NamedActionScalar rate1_named = RunSection::NamedActionScalar(_system + "." + this->Name() + ".rate1", rate1);
+		RunSection::NamedActionScalar rate2_named = RunSection::NamedActionScalar(_system + "." + this->Name() + ".rate2", rate2);
+		RunSection::NamedActionScalar rate3_named = RunSection::NamedActionScalar(_system + "." + this->Name() + ".rate3", rate3);
+
+		scalars.push_back(rate_named);
+		scalars.push_back(rate1_named);
+		scalars.push_back(rate2_named);
+		scalars.push_back(rate3_named);
+
+		return scalars;
+    }
+
+    // -----------------------------------------------------
+    // Spin Constructors and Destructor
+    // -----------------------------------------------------
+    Operator::Operator(std::string _name, std::string _contents) : properties(std::make_shared<MSDParser::ObjectParser>(_name, _contents)), type(OperatorType::Unspecified), spins(), rate1(0.0), rate2(0.0), rate3(0.0), relaxationFrame(RelaxationFrame::Molecular), isValid(false)
 	{
 	}
 
@@ -174,6 +204,8 @@ namespace SpinAPI
 				std::cout << "Warning: Ignored invalid rate \"" << rate << "\" specified for Operator object " << this->Name() << "!" << std::endl;
 		}
 
+		//RunSection::ActionScalar r1 = RunSection::ActionScalar(this->rate1,&this)
+
 		// Get a list of spins that should be affected by the operator
 		std::vector<std::string> spinlist;
 		if (this->properties->GetList("spins", spinlist) || this->properties->GetList("spin", spinlist) || this->properties->GetList("spinlist", spinlist))
@@ -259,10 +291,22 @@ namespace SpinAPI
 	{
 		return this->properties;
 	}
-	// -----------------------------------------------------
-	// Non-member non-friend methods
-	// -----------------------------------------------------
-	bool IsValid(const Operator &_operator)
+
+    void Operator::GetActionTargets(std::vector<RunSection::NamedActionScalar> &_scalars, std::vector<RunSection::NamedActionVector> &_vectors, const std::string &_system)
+    {
+		// Get ActionTargets from private methods
+		auto scalars = this->CreateActionScalars(_system);
+		//auto vectors = this->CreateActionVectors(_system);
+
+		// Insert them
+		_scalars.insert(_scalars.end(), scalars.begin(), scalars.end());
+		//_vectors.insert(_vectors.end(), vectors.begin(), vectors.end());
+    }
+
+    // -----------------------------------------------------
+    // Non-member non-friend methods
+    // -----------------------------------------------------
+    bool IsValid(const Operator &_operator)
 	{
 		return _operator.IsValid();
 	}
